@@ -4,6 +4,7 @@ using Jobsity.Chat.Hubs;
 using Jobsity.Chat.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,5 +54,11 @@ app.UseAuthorization();
 app.MapHub<ChatHub>("/chatHub");
 
 app.MapRazorPages();
+
+using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+{
+    var context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
+    await context.Database.EnsureCreatedAsync();
+}
 
 app.Run();
