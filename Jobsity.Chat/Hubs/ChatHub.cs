@@ -1,5 +1,6 @@
 ﻿namespace Jobsity.Chat.Hubs
 {
+    using Jobsity.Chat.Borders.Extensions;
     using Jobsity.Chat.Services;
     using Microsoft.AspNetCore.SignalR;
 
@@ -9,14 +10,14 @@
 
         public ChatHub(IBotService botService)
         {
-            _botService = botService;
+            _botService = botService ?? throw new ArgumentNullException(nameof(botService));
         }
 
         public async Task SendMessage(string user, string message)
         {
             if (string.IsNullOrEmpty(message)) return;
 
-            if (message.Contains("/stock="))
+            if (message.IsValidCommand())
             {
                 user = "Bot";
                 message = await _botService.GetBotMessage(message);
