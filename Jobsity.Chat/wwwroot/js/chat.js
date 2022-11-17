@@ -29,7 +29,12 @@ connection.start().then(function () {
 $("#sendMessage").click(function () {
 
     var sender = $("#sender").val();
-    var message = $("#message").val();
+    var message = $("#message").val().trim();
+
+    if (message === "") {
+        alert("Empty messages are not allowed.");
+        return;
+    }
 
     connection.invoke("SendMessage", sender, message).catch(function (err) {
         return console.error(err.toString());

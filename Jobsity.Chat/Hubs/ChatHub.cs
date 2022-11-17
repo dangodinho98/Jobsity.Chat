@@ -14,6 +14,8 @@
 
         public async Task SendMessage(string user, string message)
         {
+            if (string.IsNullOrEmpty(message)) return;
+
             if (message.Contains("/stock="))
             {
                 user = "Bot";

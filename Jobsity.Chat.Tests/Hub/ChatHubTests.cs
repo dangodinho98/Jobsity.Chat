@@ -1,4 +1,4 @@
-﻿namespace Jobsity.Chat.Tests
+﻿namespace Jobsity.Chat.Tests.Hub
 {
     using Jobsity.Chat.Hubs;
     using Jobsity.Chat.Services;
@@ -8,7 +8,7 @@
     public class Tests
     {
         private readonly Mock<IBotService> _botService = new();
-        private readonly Mock<IHubCallerClients>  _mockClients = new();
+        private readonly Mock<IHubCallerClients> _mockClients = new();
         private readonly Mock<IClientProxy> _mockClientProxy = new();
         private readonly Mock<HubCallerContext> _mockContext = new();
         private readonly ChatHub _chatHub;
@@ -33,6 +33,13 @@
         {
             await _chatHub.SendMessage("TEST", "TEST MESSAGE");
             _mockClients.Verify(clients => clients.All, Times.Once);
+        }
+
+        [Fact]
+        public async Task EmptyMessageDoesNotNotifyClients()
+        {
+            await _chatHub.SendMessage("TEST", string.Empty);
+            _mockClients.Verify(clients => clients.All, Times.Never);
         }
     }
 }

@@ -1,7 +1,9 @@
-namespace Jobsity.Chat.Tests
+namespace Jobsity.Chat.Tests.Services
 {
     using Jobsity.Chat.Borders;
+    using Jobsity.Chat.Borders.Configuration;
     using Jobsity.Chat.Services;
+    using Jobsity.Chat.Tests.Builders;
     using Moq;
     using Moq.Protected;
     using System.Net;
@@ -10,12 +12,19 @@ namespace Jobsity.Chat.Tests
     public class BotServiceTest
     {
         private readonly Mock<IHttpClientFactory> _httpClientFactory;
+        private readonly ApplicationConfig _applicationConfig;
         private readonly BotService _service;
 
         public BotServiceTest()
         {
             _httpClientFactory = new Mock<IHttpClientFactory>();
-            _service = new BotService(_httpClientFactory.Object);
+            _applicationConfig = new ApplicationConfigBuilder()
+                .WithBaseUrl("https://test.com/")
+                .WithConnectionString("connString")
+                .WithGetStockEndpoint("/s={0}")
+                .Build();
+
+            _service = new BotService(_httpClientFactory.Object, _applicationConfig);
         }
 
         [Fact]
@@ -63,9 +72,12 @@ namespace Jobsity.Chat.Tests
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent(csv)
                 })
-                .Verifiable();
+            .Verifiable();
 
-            var httpClient = new HttpClient(httpMessageHandler.Object);
+            var httpClient = new HttpClient(httpMessageHandler.Object)
+            {
+                BaseAddress = new Uri(_applicationConfig.BaseUrl),
+            };
 
             _httpClientFactory.Setup(_ => _.CreateClient(Constants.StockApiClientName))
                 .Returns(httpClient).Verifiable();
