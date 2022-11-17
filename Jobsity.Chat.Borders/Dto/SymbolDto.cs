@@ -1,4 +1,4 @@
-﻿namespace Jobsity.Chat.Borders
+﻿namespace Jobsity.Chat.Borders.Dto
 {
     public class SymbolDto
     {

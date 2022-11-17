@@ -43,7 +43,7 @@ namespace Jobsity.Chat.Tests
                 .Returns(httpClient).Verifiable();
 
             var response = await _service.GetBotMessage("/stock=xxxxxx");
-            Assert.Equal(Constants.ErrorMessage, response);
+            Assert.Equal(Constants.ErrorMessages.Default, response);
         }
 
         [Fact]

@@ -1,17 +1,25 @@
 using Jobsity.Chat.Borders;
+using Jobsity.Chat.Borders.Configuration;
 using Jobsity.Chat.Data;
 using Jobsity.Chat.Hubs;
 using Jobsity.Chat.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.Metrics;
+using Serilog;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var loggerConfig = new LoggerConfiguration().WriteTo.Console();
+Log.Logger = loggerConfig.CreateLogger();
+
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var applicationConfig = builder.Configuration.GetSection(nameof(ApplicationConfig)).Get<ApplicationConfig>();
+applicationConfig.Validate();
+builder.Services.AddSingleton(applicationConfig);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(applicationConfig.ConnectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
@@ -24,11 +32,21 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
         options.SignIn.RequireConfirmedAccount = false;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 
+builder.Services.AddValidators();
+
 builder.Services.AddScoped<IBotService, BotService>();
-builder.Services.AddHttpClient(Constants.StockApiClientName);
+builder.Services.AddHttpClient(Constants.StockApiClientName, c =>
+{
+    c.BaseAddress = new Uri(applicationConfig.BaseUrl);
+    c.DefaultRequestHeaders.Add("Accept", "application/json");
+}).ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler()
+{
+    AutomaticDecompression = DecompressionMethods.GZip
+});
 
 var app = builder.Build();
 

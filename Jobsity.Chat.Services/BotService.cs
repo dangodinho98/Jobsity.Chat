@@ -3,14 +3,18 @@
     using System.Globalization;
     using System.Text;
     using Jobsity.Chat.Borders;
+    using Jobsity.Chat.Borders.Configuration;
+    using Jobsity.Chat.Borders.Dto;
 
     public class BotService : IBotService
     {
         private readonly IHttpClientFactory _clientFactory;
+        private readonly ApplicationConfig _applicationConfig;
 
-        public BotService(IHttpClientFactory httpClientFactory)
+        public BotService(IHttpClientFactory httpClientFactory, ApplicationConfig applicationConfig)
         {
-            _clientFactory = httpClientFactory;
+            _clientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            _applicationConfig = applicationConfig ?? throw new ArgumentNullException(nameof(applicationConfig));
         }
 
         public async Task<string> GetBotMessage(string message)
@@ -21,7 +25,7 @@
                 var stockCode = message.Replace("/stock=", string.Empty);
                 var client = _clientFactory.CreateClient(Constants.StockApiClientName);
 
-                var response = await client.GetAsync(new Uri($"https://stooq.com/q/l/?s={stockCode}&f=sd2t2ohlcv&h&e=csv"));
+                var response = await client.GetAsync(string.Format(_applicationConfig.GetStockEndpoint, stockCode));
                 response.EnsureSuccessStatusCode();
 
                 var csvText = await response.Content.ReadAsStringAsync();
@@ -34,7 +38,7 @@
             }
             catch (Exception)
             {
-                messages.Append(Constants.ErrorMessage);
+                messages.Append(Constants.ErrorMessages.Default);
             }
 
             return messages.ToString();
