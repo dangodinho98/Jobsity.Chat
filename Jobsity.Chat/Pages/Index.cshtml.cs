@@ -9,19 +9,17 @@
     [Authorize]
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
 
         [BindProperty]
-        public List<SelectListItem> Users { get; set; }
+        public List<SelectListItem>? Users { get; set; }
 
         [BindProperty]
-        public string LoggedUser { get; set; }
-        public IndexModel(ILogger<IndexModel> logger,
-            UserManager<IdentityUser> userManager)
+        public string? LoggedUser { get; set; }
+
+        public IndexModel(UserManager<IdentityUser> userManager)
         {
-            _logger = logger;
-            _userManager = userManager;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public void OnGet()
