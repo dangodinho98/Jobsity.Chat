@@ -4,7 +4,12 @@
     {
         public static readonly string StockApiClientName = "StockApi";
         public static readonly string ReceiveMessage = "ReceiveMessage";
-        public static readonly string BotUsername = "Bot";
+
+        public static class Bot
+        {
+            public static readonly string Username = "Bot";
+            public static readonly string Message = "{0} quote is ${1} per share";
+        }
 
         public static class ErrorMessages
         {

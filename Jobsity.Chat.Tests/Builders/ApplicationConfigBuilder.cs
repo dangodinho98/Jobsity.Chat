@@ -8,7 +8,7 @@
 
         public ApplicationConfigBuilder()
         {
-            _instance = new ApplicationConfig()
+            _instance = new ApplicationConfig
             {
                 StockApi = new StockApi(),
                 RabbitMq = new RabbitMq(),

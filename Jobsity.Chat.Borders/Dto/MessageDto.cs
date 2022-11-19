@@ -16,7 +16,7 @@
 
         public void BotMessage(string message)
         {
-            User = Constants.BotUsername;
+            User = Constants.Bot.Username;
             Message = message;
         }
     }
