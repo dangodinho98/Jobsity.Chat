@@ -5,11 +5,9 @@ var max = 50;
 //Disable send button until connection is established
 $("#sendMessage").prop('disabled', true);
 
-connection.on("ReceiveMessage", function (user, message) {
-    var formatted = new Date().toLocaleTimeString();
-
+connection.on("ReceiveMessage", function (user, message, date) {
     var msg = message.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
-    var encodedMsg = formatted + " - " + user + " says: " + msg;
+    var encodedMsg = date + " - " + user + " says: " + msg;
     var li = document.createElement("li");
     li.textContent = encodedMsg;
     $("#messagesList").prepend(li);

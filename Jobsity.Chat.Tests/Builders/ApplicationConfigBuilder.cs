@@ -8,12 +8,16 @@
 
         public ApplicationConfigBuilder()
         {
-            _instance = new ApplicationConfig();
+            _instance = new ApplicationConfig()
+            {
+                StockApi = new StockApi(),
+                RabbitMq = new RabbitMq(),
+            };
         }
 
         public ApplicationConfigBuilder WithBaseUrl(string baseUrl)
         {
-            _instance.BaseUrl = baseUrl;
+            _instance.StockApi!.BaseUrl = baseUrl;
             return this;
         }
 
@@ -25,7 +29,7 @@
 
         public ApplicationConfigBuilder WithGetStockEndpoint(string getStockEndpoint)
         {
-            _instance.GetStockEndpoint = getStockEndpoint;
+            _instance.StockApi!.GetStockEndpoint = getStockEndpoint;
             return this;
         }
 

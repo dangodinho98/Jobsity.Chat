@@ -1,4 +1,4 @@
-﻿namespace Jobsity.Chat.Services
+﻿namespace Jobsity.Chat.Services.Bot
 {
     using System.Globalization;
     using System.Text;
@@ -25,7 +25,7 @@
                 var stockCode = message.Replace("/stock=", string.Empty);
                 var client = _clientFactory.CreateClient(Constants.StockApiClientName);
 
-                var response = await client.GetAsync(string.Format(_applicationConfig.GetStockEndpoint, stockCode));
+                var response = await client.GetAsync(string.Format(_applicationConfig.StockApi!.GetStockEndpoint!, stockCode));
                 response.EnsureSuccessStatusCode();
 
                 var csvText = await response.Content.ReadAsStringAsync();
@@ -55,7 +55,7 @@
                 {
                     var values = line.Split(",");
 
-                    return new SymbolDto()
+                    return new SymbolDto
                     {
                         Symbol = values[0].ToUpper(),
                         Date = DateTime.Parse(values[1]),

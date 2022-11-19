@@ -2,12 +2,12 @@ namespace Jobsity.Chat.Tests.Services
 {
     using Jobsity.Chat.Borders;
     using Jobsity.Chat.Borders.Configuration;
-    using Jobsity.Chat.Services;
     using Jobsity.Chat.Tests.Builders;
     using Moq;
     using Moq.Protected;
     using System.Net;
     using System.Net.Http;
+    using Jobsity.Chat.Services.Bot;
 
     public class BotServiceTest
     {
@@ -39,7 +39,7 @@ namespace Jobsity.Chat.Tests.Services
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>()
                 )
-                .ReturnsAsync(new HttpResponseMessage()
+                .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent(csv)
@@ -67,7 +67,7 @@ namespace Jobsity.Chat.Tests.Services
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>()
                 )
-                .ReturnsAsync(new HttpResponseMessage()
+                .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent(csv)
@@ -76,7 +76,7 @@ namespace Jobsity.Chat.Tests.Services
 
             var httpClient = new HttpClient(httpMessageHandler.Object)
             {
-                BaseAddress = new Uri(_applicationConfig.BaseUrl),
+                BaseAddress = new Uri(_applicationConfig.StockApi!.BaseUrl!),
             };
 
             _httpClientFactory.Setup(_ => _.CreateClient(Constants.StockApiClientName))

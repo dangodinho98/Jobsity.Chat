@@ -6,9 +6,10 @@
 
     public class ApplicationConfig
     {
-        public string BaseUrl { get; set; }
-        public string ConnectionString { get; set; }
-        public string GetStockEndpoint { get; set; }
+        public int MessagesShown { get; set; }
+        public string? ConnectionString { get; set; }
+        public RabbitMq? RabbitMq { get; set; }
+        public StockApi? StockApi { get; set; }
 
         public void Validate()
         {
@@ -20,5 +21,17 @@
             Log.Error("Configuration: Contains errors: {@errors}", errors);
             throw new ErrorConfigurationException(string.Join(",", errors));
         }
+    }
+
+    public class StockApi
+    {
+        public string? BaseUrl { get; set; }
+        public string? GetStockEndpoint { get; set; }
+    }
+
+    public class RabbitMq
+    {
+        public string? Hostname { get; set; }
+        public string QueueName { get; set; }
     }
 }

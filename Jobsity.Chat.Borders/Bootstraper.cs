@@ -1,5 +1,7 @@
 ﻿namespace Jobsity.Chat.Borders
 {
+    using AutoMapper;
+    using Jobsity.Chat.Borders.Mappers;
     using Jobsity.Chat.Borders.Validators;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -9,6 +11,14 @@
         {
             services
                 .AddScoped<ApplicationConfigValidator>();
+        }
+
+        public static void AddMapperProfile(this IServiceCollection services)
+        {
+            services.AddSingleton(_ => new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new MapperProfile());
+            }).CreateMapper());
         }
     }
 }

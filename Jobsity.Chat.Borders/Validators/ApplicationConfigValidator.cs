@@ -7,9 +7,19 @@
     {
         public ApplicationConfigValidator()
         {
-            RuleFor(config => config.BaseUrl).NotEmpty().WithMessage(Constants.ErrorMessages.MissingApplicationConfig);
             RuleFor(config => config.ConnectionString).NotEmpty().WithMessage(Constants.ErrorMessages.MissingApplicationConfig);
-            RuleFor(config => config.GetStockEndpoint).NotEmpty().WithMessage(Constants.ErrorMessages.MissingApplicationConfig);
+
+            When(config => config.StockApi is not null, () =>
+            {
+                RuleFor(config => config.StockApi!.BaseUrl).NotEmpty().WithMessage(Constants.ErrorMessages.MissingApplicationConfig);
+                RuleFor(config => config.StockApi!.GetStockEndpoint).NotEmpty().WithMessage(Constants.ErrorMessages.MissingApplicationConfig);
+            });
+
+            When(config => config.RabbitMq is not null, () =>
+            {
+                RuleFor(config => config.RabbitMq!.Hostname).NotEmpty()
+                    .WithMessage(Constants.ErrorMessages.MissingApplicationConfig);
+            });
         }
     }
 }

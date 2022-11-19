@@ -1,4 +1,4 @@
-﻿namespace Jobsity.Chat.Services
+﻿namespace Jobsity.Chat.Services.Bot
 {
     public interface IBotService
     {

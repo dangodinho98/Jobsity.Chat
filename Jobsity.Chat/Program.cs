@@ -1,12 +1,12 @@
 using Jobsity.Chat.Borders;
 using Jobsity.Chat.Borders.Configuration;
-using Jobsity.Chat.Data;
-using Jobsity.Chat.Hubs;
+using Jobsity.Chat.Repositories;
 using Jobsity.Chat.Services;
+using Jobsity.Chat.Services.Hubs;
+using Jobsity.Chat.Services.RabbitMQ;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,9 +17,10 @@ Log.Logger = loggerConfig.CreateLogger();
 var applicationConfig = builder.Configuration.GetSection(nameof(ApplicationConfig)).Get<ApplicationConfig>();
 applicationConfig.Validate();
 builder.Services.AddSingleton(applicationConfig);
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(applicationConfig.ConnectionString));
+    options.UseSqlServer(applicationConfig.ConnectionString!, b => b.MigrationsAssembly("Jobsity.Chat")));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
@@ -34,19 +35,12 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddRazorPages();
-builder.Services.AddSignalR();
 
 builder.Services.AddValidators();
-
-builder.Services.AddScoped<IBotService, BotService>();
-builder.Services.AddHttpClient(Constants.StockApiClientName, c =>
-{
-    c.BaseAddress = new Uri(applicationConfig.BaseUrl);
-    c.DefaultRequestHeaders.Add("Accept", "application/json");
-}).ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler()
-{
-    AutomaticDecompression = DecompressionMethods.GZip
-});
+builder.Services.AddMapperProfile();
+builder.Services.AddServices();
+builder.Services.AddRepositories();
+builder.Services.AddHttpClients(applicationConfig);
 
 var app = builder.Build();
 
@@ -69,14 +63,35 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHub<ChatHub>("/chatHub");
+app.UseEndpoints(configure =>
+{
+    configure.MapHub<ChatHub>("/chatHub");
+});
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    using var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+    var consumer = serviceScope.ServiceProvider.GetService<IConsumer>();
+    consumer?.Connect();
+});
 
 app.MapRazorPages();
 
-using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-{
-    var context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
-    await context.Database.EnsureCreatedAsync();
-}
+await InitializeDatabase();
 
 app.Run();
+
+async Task InitializeDatabase()
+{
+    try
+    {
+        using var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
+        if (context is not null)
+            await context.Database.EnsureCreatedAsync();
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while seeding the database.");
+    }
+}
