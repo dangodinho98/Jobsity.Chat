@@ -8,32 +8,32 @@
     using Jobsity.Chat.Borders.Entities;
     using Jobsity.Chat.Borders.Extensions;
     using Jobsity.Chat.Repositories.Messages;
-    using Jobsity.Chat.Services.Bot;
     using Jobsity.Chat.Services.Hubs;
     using Microsoft.AspNetCore.SignalR;
     using Newtonsoft.Json;
     using Serilog;
     using System;
     using System.Text;
+    using Jobsity.Chat.Bot;
 
     public class Consumer : IConsumer
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IMapper _mapper;
         private readonly IModel _channel;
-        private readonly IBotService _botService;
+        private readonly IBotProcessor _botProcessor;
         private readonly RabbitMq _rabbitMq;
         private readonly IHubContext<ChatHub> _chatHub;
 
         public Consumer(IMessageRepository messageRepository,
             IMapper mapper, 
             IServiceProvider serviceProvider,
-            IBotService botService,
+            IBotProcessor botProcessor,
             ApplicationConfig applicationConfig)
         {
             _messageRepository = messageRepository ?? throw new ArgumentNullException(nameof(messageRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _botService = botService ?? throw new ArgumentNullException(nameof(botService));
+            _botProcessor = botProcessor ?? throw new ArgumentNullException(nameof(botProcessor));
             _rabbitMq = applicationConfig.RabbitMq!;
 
             var factory = new ConnectionFactory
@@ -77,14 +77,15 @@
         {
             if (string.IsNullOrEmpty(messageDto.Message)) return;
 
-            if (messageDto.Message.IsBotCommand() is false)
+            if (messageDto.Message.IsBotCommand())
             {
-                Send(messageDto.User, messageDto.Message);
+                var processedMessage = await _botProcessor.ProcessCommand(messageDto.Message);
+                messageDto.BotMessage(processedMessage);
+            }
+            else
+            {
                 await _messageRepository.AddAsync(_mapper.Map<Message>(messageDto));
             }
-
-            var botMessage = await _botService.GetBotMessage(messageDto.Message);
-            messageDto.BotMessage(botMessage);
 
             Send(messageDto.User, messageDto.Message);
         }

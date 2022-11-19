@@ -1,5 +1,6 @@
 using Jobsity.Chat.Borders;
 using Jobsity.Chat.Borders.Configuration;
+using Jobsity.Chat.Bot;
 using Jobsity.Chat.Repositories;
 using Jobsity.Chat.Services;
 using Jobsity.Chat.Services.Hubs;
@@ -37,6 +38,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 builder.Services.AddRazorPages();
 
 builder.Services.AddValidators();
+builder.Services.AddBotProcessor(applicationConfig);
 builder.Services.AddMapperProfile();
 builder.Services.AddServices();
 builder.Services.AddRepositories();

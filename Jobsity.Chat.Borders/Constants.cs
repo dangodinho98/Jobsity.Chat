@@ -15,6 +15,7 @@
         {
             public static readonly string Default = "Oops, an error occurred.";
             public static readonly string MissingApplicationConfig = "Missing application config data.";
+            public static readonly string StockCodeNotFound = "Stock code not found.";
         }
     }
 }

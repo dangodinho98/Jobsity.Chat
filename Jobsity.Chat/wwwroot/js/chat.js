@@ -1,6 +1,4 @@
-﻿
-var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
-var max = 50;
+﻿var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
 //Disable send button until connection is established
 $("#sendMessage").prop('disabled', true);
@@ -11,11 +9,6 @@ connection.on("ReceiveMessage", function (user, message, date) {
     var li = document.createElement("li");
     li.textContent = encodedMsg;
     $("#messagesList").prepend(li);
-    $("ul").each(function () {
-        $(this).find('li').each(function (index) {
-            if (index >= max) $(this).hide();
-        });
-    });
 });
 
 connection.start().then(function () {

@@ -2,7 +2,6 @@
 {
     using Jobsity.Chat.Borders;
     using Jobsity.Chat.Borders.Configuration;
-    using Jobsity.Chat.Services.Bot;
     using Jobsity.Chat.Services.RabbitMQ;
     using Microsoft.Extensions.DependencyInjection;
     using System.Net;
@@ -12,7 +11,6 @@
         public static void AddServices(this IServiceCollection services)
         {
             services
-                .AddTransient<IBotService, BotService>()
                 .AddTransient<IConsumer, Consumer>()
                 .AddTransient<IProducer, Producer>()
                 .AddSignalR();

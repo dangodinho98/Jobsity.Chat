@@ -1,24 +1,24 @@
-﻿namespace Jobsity.Chat.Services.Bot
+﻿namespace Jobsity.Chat.Bot
 {
-    using CsvHelper;
     using Jobsity.Chat.Borders;
-    using Jobsity.Chat.Borders.Configuration;
     using Jobsity.Chat.Borders.Dto;
+    using Jobsity.Chat.Bot.Mappers;
     using System.Globalization;
     using System.Text;
+    using CsvHelper;
 
-    public class BotService : IBotService
+    public class BotProcessor : IBotProcessor
     {
         private readonly IHttpClientFactory _clientFactory;
-        private readonly ApplicationConfig _applicationConfig;
+        private readonly string _endpoint;
 
-        public BotService(IHttpClientFactory httpClientFactory, ApplicationConfig applicationConfig)
+        public BotProcessor(IHttpClientFactory httpClientFactory, string endpoint)
         {
             _clientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _applicationConfig = applicationConfig ?? throw new ArgumentNullException(nameof(applicationConfig));
+            _endpoint = endpoint;
         }
 
-        public async Task<string> GetBotMessage(string message)
+        public async Task<string> ProcessCommand(string message)
         {
             var messages = new StringBuilder();
             try
@@ -26,18 +26,22 @@
                 var stockCode = message.Replace("/stock=", string.Empty);
                 var client = _clientFactory.CreateClient(Constants.StockApiClientName);
 
-                var response = await client.GetAsync(string.Format(_applicationConfig.StockApi!.GetStockEndpoint!, stockCode));
+                var response = await client.GetAsync(string.Format(_endpoint, stockCode));
                 response.EnsureSuccessStatusCode();
 
                 var stream = await response.Content.ReadAsStreamAsync();
-                
+
                 using var reader = new StreamReader(stream);
                 var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                csv.Context.RegisterClassMap<SymbolDtoMapper>();
+
                 var items = csv.GetRecords<SymbolDto>();
-                
+
                 foreach (var item in items)
                 {
-                    messages.Append(string.Format(Constants.Bot.Message, item.Symbol, item.Close));
+                    messages.Append(item.Close == -1
+                        ? Constants.ErrorMessages.StockCodeNotFound
+                        : string.Format(Constants.Bot.Message, item.Symbol, item.Close));
                 }
             }
             catch (Exception)
