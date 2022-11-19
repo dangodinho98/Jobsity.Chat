@@ -15,7 +15,7 @@
             _rabbitMq = applicationConfig.RabbitMq!;
         }
 
-        public async Task Send(MessageDto messageDto)
+        public void Send(MessageDto messageDto)
         {
             var factory = new ConnectionFactory
             {

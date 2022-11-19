@@ -6,6 +6,6 @@
     {
         private const string Pattern = "^/stock=.+";
 
-        public static bool IsValidCommand(this string command) => Regex.IsMatch(command, Pattern);
+        public static bool IsBotCommand(this string command) => Regex.IsMatch(command, Pattern);
     }
 }

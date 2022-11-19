@@ -4,6 +4,6 @@
 
     public interface IProducer
     {
-        Task Send(MessageDto messageDto);
+        void Send(MessageDto messageDto);
     }
 }

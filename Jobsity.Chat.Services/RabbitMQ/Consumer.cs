@@ -77,14 +77,16 @@
         {
             if (string.IsNullOrEmpty(messageDto.Message)) return;
 
-            if (messageDto.Message.IsValidCommand())
+            if (messageDto.Message.IsBotCommand() is false)
             {
-                var botMessage = await _botService.GetBotMessage(messageDto.Message);
-                messageDto.BotMessage(botMessage);
+                Send(messageDto.User, messageDto.Message);
+                await _messageRepository.AddAsync(_mapper.Map<Message>(messageDto));
             }
 
+            var botMessage = await _botService.GetBotMessage(messageDto.Message);
+            messageDto.BotMessage(botMessage);
+
             Send(messageDto.User, messageDto.Message);
-            await _messageRepository.AddAsync(_mapper.Map<Message>(messageDto));
         }
 
         private void Send(string? user, string message)
